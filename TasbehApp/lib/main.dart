@@ -48,72 +48,82 @@ class DataLoadingScreen extends StatefulWidget {
 
 class _DataLoadingScreenState extends State<DataLoadingScreen> {
   Future<Map<String, dynamic>> loadData() async {
-    // Simulate data loading from the "data.json" file
-    await Future.delayed(Duration(seconds: 2)); //
-    LocalDataStorage().saveDataToFile({
-      "BackgroundImage": "Mosque3",
-      "ColorScheme": "1",
-      "Vibration": true,
-      "Sound": true,
-      "CountMax": 33,
-      "Theme": "Red",
-      "Vignetto": false,
-      "Tasbih": [
-        {
-          "Ayate Karima": [0, 35, 0, 0]
-        },
-        {
-          "SubhanAllah": [0, 35, 0, 0]
-        },
-        {
-          "Alhamdulillah": [0, 35, 0, 0]
-        },
-        {
-          "Allahuakbar": [0, 35, 0, 0]
-        },
-        {
-          "La illaha illallah": [0, 35, 0, 0]
-        },
-        {
-          "Astaghfir-Allah": [0, 35, 0, 0]
-        },
-        {
-          "Bismillah": [0, 35, 0, 0]
-        },
-        {
-          "Ya Waliyyul Hasanaat": [0, 35, 0, 0]
-        },
-        {
-          "Laa hawla wa laa quwwata illa Billaah": [0, 35, 0, 0]
-        },
-        {
-          "la Haola Wala Quwwata illa billahil Aliyil Azeem": [0, 35, 0, 0]
-        },
-        {
-          "Allahuma Salli Ala Muhammadin Wa Aaale Muhammad": [0, 35, 0, 0]
-        },
-        {
-          "Ash-hadu an la ilaha illallah, wahdahu la sharika lahu": [
-            0,
-            35,
-            0,
-            0
-          ]
-        },
-        {
-          "Subhaan Allaah wa bi hamdihi Subhaan Allaah il-'Azeem": [0, 35, 0, 0]
-        },
-        {
-          "Subhaan Allaah, wa'l-hamdu Lillah, wa laa ilaah ill-Allaah, wa Allaahu akbar":
-              [0, 35, 0, 0]
-        },
-        {
-          "Allahumma, anta's-salam wa minkas'salam, Tabarakta-yal-dhal'Jalali wa'l-Ikram":
-              [0, 35, 0, 0]
-        }
-      ]
-    }); // Replace with your data loading logic
-    final data = await LocalDataStorage().readDataFromFile();
+    await Future.delayed(Duration(seconds: 2));
+    var data = await LocalDataStorage().readDataFromFile();
+    if (data.isEmpty) {
+      LocalDataStorage().saveDataToFile({
+        "BackgroundImage": "Mosque3",
+        "ColorScheme": "1",
+        "Vibration": true,
+        "Sound": true,
+        "CountMax": 33,
+        "Theme": "Red",
+        "Vignetto": false,
+        "Tasbih": [
+          {
+            "Ayate Karima": [0, 33, 0, 0]
+          },
+          {
+            "SubhanAllah": [0, 33, 0, 0]
+          },
+          {
+            "Alhamdulillah": [0, 33, 0, 0]
+          },
+          {
+            "Allahuakbar": [0, 33, 0, 0]
+          },
+          {
+            "La illaha illallah": [0, 33, 0, 0]
+          },
+          {
+            "Astaghfir-Allah": [0, 33, 0, 0]
+          },
+          {
+            "Bismillah": [0, 33, 0, 0]
+          },
+          {
+            "Ya Waliyyul Hasanaat": [0, 33, 0, 0]
+          },
+          {
+            "Laa hawla wa laa quwwata illa Billaah": [0, 33, 0, 0]
+          },
+          {
+            "la Haola Wala Quwwata illa billahil Aliyil Azeem": [0, 33, 0, 0]
+          },
+          {
+            "Allahuma Salli Ala Muhammadin Wa Aaale Muhammad": [0, 33, 0, 0]
+          },
+          {
+            "Ash-hadu an la ilaha illallah, wahdahu la sharika lahu": [
+              0,
+              35,
+              0,
+              0
+            ]
+          },
+          {
+            "Subhaan Allaah wa bi hamdihi Subhaan Allaah il-'Azeem": [
+              0,
+              33,
+              0,
+              0
+            ]
+          },
+          {
+            "Subhaan Allaah, wa'l-hamdu Lillah, wa laa ilaah ill-Allaah, wa Allaahu akbar":
+                [0, 33, 0, 0]
+          },
+          {
+            "Allahumma, anta's-salam wa minkas'salam, Tabarakta-yal-dhal'Jalali wa'l-Ikram":
+                [0, 33, 0, 0]
+          }
+        ]
+      });
+      print(data);
+    } else {
+      print("############### Not empty");
+    }
+    data = await LocalDataStorage().readDataFromFile();
     Dataset = data;
     TasbihsList = data["Tasbih"];
     return data;
@@ -176,7 +186,6 @@ class Tasbeeh extends StatefulWidget {
 }
 
 class _TasbeehState extends State<Tasbeeh> {
-  // "Mosque2";
   Color? selectedColor = Colors.white;
 
   @override
@@ -187,9 +196,21 @@ class _TasbeehState extends State<Tasbeeh> {
       // ############## App Bar ############
       appBar: AppBar(
         backgroundColor: selectedColor,
-        title: Text(
-          "Tasbeeh Counter",
-          style: TextStyle(color: Colors.white),
+        title: const Row(
+          children: [
+            Image(
+              image: AssetImage("assets/images/Logo.png"),
+              width: 35,
+              height: 35,
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text(
+              "Tasbeeh Counter",
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -341,13 +362,6 @@ class _TasbeehState extends State<Tasbeeh> {
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          Color? IconColor;
-          if (selectedColor == Colors.white) {
-            IconColor = Colors.blue;
-          } else {
-            IconColor = selectedColor;
-          }
-
           // ######### Popup Dialog Box ###########
           return Dialog(
             child: Container(
@@ -404,7 +418,8 @@ class _TasbeehState extends State<Tasbeeh> {
                           child: ElevatedButton(
                             style: ButtonStyle(
                               backgroundColor:
-                                  MaterialStateProperty.all<Color?>(IconColor),
+                                  MaterialStateProperty.all<Color?>(
+                                      selectedColor),
                             ),
                             child: const Text("Cancel"),
                             onPressed: () {
@@ -417,7 +432,8 @@ class _TasbeehState extends State<Tasbeeh> {
                           child: ElevatedButton(
                             style: ButtonStyle(
                               backgroundColor:
-                                  MaterialStateProperty.all<Color?>(IconColor),
+                                  MaterialStateProperty.all<Color?>(
+                                      selectedColor),
                             ),
                             child: const Text("Save"),
                             onPressed: () {
@@ -498,6 +514,8 @@ class _Tasbih_PageState extends State<Tasbih_Page> {
                     0,
                     0
                   ];
+                  // Dataset["Tasbih"] = Dataset[TasbihList];
+                  // LocalDataStorage().saveDataToFile(Dataset);
                 });
                 // Reset Counter Func
               },
@@ -1038,6 +1056,7 @@ class _App_SettingState extends State<App_Setting> {
 class LocalDataStorage {
   Future<Directory> getLocalDirectory() async {
     final directory = await getApplicationDocumentsDirectory();
+    print(directory);
     return directory;
   }
 
