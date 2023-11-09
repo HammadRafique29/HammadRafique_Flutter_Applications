@@ -10,4 +10,3 @@ Working Flutter Beginners Applications
 
 <img width="752" alt="Profiles" src="https://github.com/HammadRafique29/HammadRafique_Flutter_Applications/assets/112252001/593d05a4-9253-4154-960c-b3d40c51f157">
 
-git add
