@@ -1,0 +1,20 @@
+./gradlew app:signingReport
+dart pub global activate flutterfire_cli
+
+https://firebase.google.com/docs/flutter/setup?platform=ios
+https://firebase.google.com/docs/cli#windows-npm
+
+
+void _incrementCounter() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    await ref.set({
+      "name": "John",
+      "age": 18,
+      "address": {
+        "line1": "100 Mountain View"
+      }
+    });
