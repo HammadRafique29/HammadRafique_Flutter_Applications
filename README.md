@@ -15,7 +15,7 @@ Working Flutter Beginners Applications
 
 <img width="699" alt="tableGenerator" src="https://github.com/HammadRafique29/HammadRafique_Flutter_Applications/assets/112252001/0f346ab8-cc9e-4f35-af96-3a58b8385a49">
 
-### Table Generator Application
+### Firebase Board Messaging Application
 
 <img width="527" alt="fibase" src="https://github.com/HammadRafique29/HammadRafique_Flutter_Applications/assets/112252001/a1898ac0-8469-4ec8-98a3-8ad1ff8ffbe1">
 
