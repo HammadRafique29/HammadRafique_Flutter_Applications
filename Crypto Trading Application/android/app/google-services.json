@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "330756045382",
+    "firebase_url": "https://application029-2024-default-rtdb.firebaseio.com",
+    "project_id": "application029-2024",
+    "storage_bucket": "application029-2024.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330756045382:android:76a5be42f81b8368eaa847",
+        "android_client_info": {
+          "package_name": "com.example.trading_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMGxn-y3t22fHBV3m7C_Y15jIW0iJiqNk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

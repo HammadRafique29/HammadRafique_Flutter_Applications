@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'Signup.dart';
+import 'package:trading_app/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'adminLogin.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,6 +27,37 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+
+  Future<void> loginUser() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // FirebaseDatabase database = FirebaseDatabase.instance;
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    // DatabaseReference adminUsers = ref.push();
+
+    final snapshot = await ref.child('Users').get();
+    if (snapshot.exists) {
+      var data = snapshot.value as Map<dynamic, dynamic>;
+      for (var entry in data.entries) {
+        var key = entry.key;
+        var value = entry.value;
+
+        if (_emailController.text == value['Email'] &&
+            _passwordController.text == value['Password']) {
+          print("Email: ${value['Email']}");
+          print("Password: ${value['Password']}");
+          print("\nLogin Success");
+          break;
+        } else {
+          print("\nLogin Failed");
+        }
+      }
+    } else {
+      print('No data available.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,30 +131,66 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: ElevatedButton.styleFrom(
                       primary: Colors.amber,
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       String email = _emailController.text;
                       String password = _passwordController.text;
-                      print('Email: $email\nPassword: $password');
+
+                      if (email != "" && password != "") {
+                        var result = await loginUser();
+                      }
+
+                      // setState(() async {
+
+                      // });
                     },
                     child: const Text('Login',
                         style: TextStyle(color: Colors.white)),
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            SignupScreen(), // Replace SecondPage with your next page widget
+                Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  SignupScreen(), // Replace SecondPage with your next page widget
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Not Register?  Signup',
+                          style: TextStyle(color: Colors.amber.shade700),
+                        ),
                       ),
-                    );
-                  },
-                  child: Text(
-                    'Not Register?  Signup',
-                    style: TextStyle(color: Colors.amber.shade700),
+                      TextButton(
+                        style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  adminLoginScreen(), // Replace SecondPage with your next page widget
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Admin Login',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                )
               ],
             ),
           )),
