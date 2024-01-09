@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:trading_app/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -11,6 +14,23 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController _firstNameController = TextEditingController();
   TextEditingController _lastNameController = TextEditingController();
   bool _acceptTerms = false;
+
+  Future<void> signUpUser() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // FirebaseDatabase database = FirebaseDatabase.instance;
+    DatabaseReference ref = FirebaseDatabase.instance.ref("Users");
+    DatabaseReference adminUsers = ref.push();
+
+    await adminUsers.set({
+      "FirstName": _firstNameController.text,
+      "LastName": _lastNameController.text,
+      "Email": _emailController.text,
+      "Password": _passwordController.text,
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +170,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       print('Email: $email');
                       print('Password: $password');
                       print('Accept Terms: $_acceptTerms');
+
+                      setState(() async {
+                        await signUpUser();
+                      });
                     },
                     child: const Text('Signup',
                         style: TextStyle(color: Colors.white)),
