@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:trading_app/screens/coinPage.dart';
-import 'Signup.dart';
-import 'package:trading_app/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'adminLogin.dart';
 import 'sampleData.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -40,6 +34,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     PageFive(),
     coinPage()
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,7 +162,16 @@ class MySearchDelegate extends SearchDelegate<String> {
     for (int i = 0; i < crypto.length; i++) {
       if (crypto[i]["id"].contains(query)) {
         CryptoContainer.add(GestureDetector(
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CoinScreen(
+                  coinName: crypto[i],
+                ),
+              ),
+            );
+          },
           child: Container(
             width: MediaQuery.sizeOf(context).width,
             height: MediaQuery.sizeOf(context).height * 0.07,
@@ -188,7 +192,7 @@ class MySearchDelegate extends SearchDelegate<String> {
                   "${crypto[i]["current_price"]} USD",
                   style: TextStyle(
                     color:
-                        crypto[i]["price_change_percentage_1h_in_currency"] > 0
+                        crypto[i]["price_change_percentage_24h_in_currency"] > 0
                             ? Colors.green
                             : Colors.red[300],
                     fontSize: 15.0,
@@ -292,7 +296,7 @@ class _PageOneState extends State<PageOne> {
                   "${crypto[i]["current_price"]} USD",
                   style: TextStyle(
                     color:
-                        crypto[i]["price_change_percentage_1h_in_currency"] > 0
+                        crypto[i]["price_change_percentage_24h_in_currency"] > 0
                             ? Colors.green
                             : Colors.red[300],
                     fontSize: 15.0,

@@ -3,6 +3,8 @@ import 'package:trading_app/screens/dashboard.dart';
 import 'screens/Login.dart';
 import 'screens/dashboard.dart';
 
+
+
 void main() {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
