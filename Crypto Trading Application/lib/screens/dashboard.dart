@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:trading_app/screens/coinPage.dart';
 import 'Signup.dart';
 import 'package:trading_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'adminLogin.dart';
 import 'sampleData.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+int _currentIndex = 0;
 
 void main() {
   runApp(MyApp());
@@ -27,14 +32,13 @@ class DashBoardScreen extends StatefulWidget {
 }
 
 class _DashBoardScreenState extends State<DashBoardScreen> {
-  int _currentIndex = 0;
-
   final List<Widget> _pages = [
     PageOne(),
     PageTwo(),
     PageThree(),
     PageFour(),
     PageFive(),
+    coinPage()
   ];
   @override
   Widget build(BuildContext context) {
@@ -158,47 +162,42 @@ class MySearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Implement suggestions based on the query here
-    return Center(
-      child: Text('Search suggestions for: $query'),
-    );
-  }
-}
+    List<Widget> CryptoContainer = [];
 
-class PageOne extends StatelessWidget {
-  List<Widget> CryptoContainer = [];
-
-  @override
-  Widget build(BuildContext context) {
-    CryptoContainer = [];
     for (int i = 0; i < crypto.length; i++) {
-      CryptoContainer.add(Container(
-        width: MediaQuery.sizeOf(context).width,
-        height: MediaQuery.sizeOf(context).height * 0.07,
-        color: Colors.white,
-        child: ListTile(
-            leading: Container(
-              width: 40,
-              height: 40,
-              child: Image.network(crypto[i]["image"]),
-            ),
-            title: Text(
-              "${crypto[i]["id"][0].toUpperCase()}${crypto[i]["id"].substring(1).toLowerCase()}",
-              style: TextStyle(
-                fontSize: 20.0,
-              ),
-            ),
-            trailing: Text(
-              "${crypto[i]["current_price"]} USD",
-              style: TextStyle(
-                color: crypto[i]["price_change_percentage_1h_in_currency"] > 0
-                    ? Colors.green
-                    : Colors.red[300],
-                fontSize: 15.0,
-              ),
-            )),
-      ));
-      CryptoContainer.add(SizedBox(height: 5));
+      if (crypto[i]["id"].contains(query)) {
+        CryptoContainer.add(GestureDetector(
+          onTap: () {},
+          child: Container(
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height * 0.07,
+            color: Colors.white,
+            child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  child: Image.network(crypto[i]["image"]),
+                ),
+                title: Text(
+                  "${crypto[i]["id"][0].toUpperCase()}${crypto[i]["id"].substring(1).toLowerCase()}",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+                trailing: Text(
+                  "${crypto[i]["current_price"]} USD",
+                  style: TextStyle(
+                    color:
+                        crypto[i]["price_change_percentage_1h_in_currency"] > 0
+                            ? Colors.green
+                            : Colors.red[300],
+                    fontSize: 15.0,
+                  ),
+                )),
+          ),
+        ));
+        CryptoContainer.add(SizedBox(height: 5));
+      }
     }
 
     return SingleChildScrollView(
@@ -209,9 +208,110 @@ class PageOne extends StatelessWidget {
         ),
       ),
     );
-    // return Center(
-    //   child: Text('Page One Content'),
-    // );
+  }
+}
+
+class PageOne extends StatefulWidget {
+  const PageOne({super.key});
+
+  @override
+  State<PageOne> createState() => _PageOneState();
+}
+
+class _PageOneState extends State<PageOne> {
+  List<Widget> CryptoContainer = [];
+  // List<dynamic> crypto = [];
+
+  Future<String> fetchData() async {
+    final response = await http.get(
+      Uri.parse(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=1h%2C24h&locale=en&precision=2',
+      ),
+      headers: {
+        'accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      crypto = data;
+      return data.toString();
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    CryptoContainer = [];
+
+    FutureBuilder(
+      future: fetchData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          return Center(
+            child: Text('API Response: ${snapshot.data}'),
+          );
+        }
+      },
+    );
+
+    for (int i = 0; i < crypto.length; i++) {
+      CryptoContainer.add(GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CoinScreen(
+                  coinName: crypto[i],
+                ),
+              ),
+            );
+          },
+          child: Container(
+            width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height * 0.07,
+            color: Colors.white,
+            child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  child: Image.network(crypto[i]["image"]),
+                ),
+                title: Text(
+                  "${crypto[i]["id"][0].toUpperCase()}${crypto[i]["id"].substring(1).toLowerCase()}",
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+                trailing: Text(
+                  "${crypto[i]["current_price"]} USD",
+                  style: TextStyle(
+                    color:
+                        crypto[i]["price_change_percentage_1h_in_currency"] > 0
+                            ? Colors.green
+                            : Colors.red[300],
+                    fontSize: 15.0,
+                  ),
+                )),
+          )));
+      CryptoContainer.add(
+        SizedBox(height: 5),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Container(
+        margin: EdgeInsets.only(top: 20.0),
+        child: Column(
+          children: CryptoContainer,
+        ),
+      ),
+    );
   }
 }
 
@@ -247,6 +347,15 @@ class PageFive extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text('Page Five Content'),
+    );
+  }
+}
+
+class coinPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Coin Page Content'),
     );
   }
 }
