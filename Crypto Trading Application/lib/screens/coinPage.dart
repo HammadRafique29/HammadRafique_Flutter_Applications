@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 import 'Login.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class CoinScreen extends StatefulWidget {
   final Map<dynamic, dynamic> coinName;
@@ -13,6 +17,55 @@ class CoinScreen extends StatefulWidget {
 
 class _CoinScreenState extends State<CoinScreen> {
   bool favouriteCoin = false;
+
+  void getCoinData() async {
+    var data = await LocalDataStorage().readDataFromFile();
+    print(data);
+    if (!data.isEmpty) {
+      if (data["Coins"] == null) {
+        LocalDataStorage().saveDataToFile({"Coins": []});
+      } else if (data["Coins"].contains(widget.coinName["id"])) {
+        setState(() {
+          favouriteCoin = true;
+        });
+      }
+    } else {
+      LocalDataStorage().saveDataToFile({"Coins": []});
+    }
+  }
+
+  Future<void> requestWritePermission() async {
+    PermissionStatus status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+    }
+    if (status.isGranted) {
+      // Write your code here to access the external storage
+      final file = File('/storage/emulated/0/favorite_Coins.json');
+      if (!file.existsSync()) {
+        file.createSync();
+      }
+      final jsonString = file.readAsStringSync();
+      final data = jsonDecode(jsonString);
+      print(data);
+
+      data['coins'].add(widget.coinName["id"]);
+
+      final newJsonString = jsonEncode(data);
+      file.writeAsStringSync(newJsonString);
+    }
+    // If the permission is permanently denied, open the app settings
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCoinData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,22 +96,39 @@ class _CoinScreenState extends State<CoinScreen> {
               final SharedPreferences prefs =
                   await SharedPreferences.getInstance();
               final bool? userLogedin = prefs.getBool('loginExists');
-              if (userLogedin != null) {
+              if (userLogedin != null && userLogedin) {
                 // final bool? userLoggedType = prefs.getBool('loginType');
+                // requestWritePermission();
+
+                if (favouriteCoin) {
+                  favouriteCoin = false;
+                  var data = await LocalDataStorage().readDataFromFile();
+                  data["Coins"]
+                      .removeWhere((word) => word == widget.coinName["id"]);
+                  LocalDataStorage().saveDataToFile({"Coins": data["Coins"]});
+                } else {
+                  favouriteCoin = true;
+                  var data = await LocalDataStorage().readDataFromFile();
+                  if (data.isEmpty) {
+                    LocalDataStorage().saveDataToFile({
+                      "Coins": [widget.coinName["id"]]
+                    });
+                  } else {
+                    print("## Not Empty ${data}");
+                    data["Coins"].add(widget.coinName["id"]);
+                    LocalDataStorage().saveDataToFile(data);
+                    data = await LocalDataStorage().readDataFromFile();
+                    print("## Got Filled ${data}");
+                  }
+                }
+
+                setState(() {});
               } else {
                 print("## Setting Data");
                 await prefs.setBool('loginExists', false);
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()));
+                    MaterialPageRoute(builder: (context) => LoginScreen()));
               }
-              
-              setState(() {
-                if (favouriteCoin) {
-                  favouriteCoin = false;
-                } else {
-                  favouriteCoin = true;
-                }
-              });
             },
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -328,5 +398,50 @@ class _CoinScreenState extends State<CoinScreen> {
         color: Colors.amber,
       ),
     );
+  }
+}
+
+class LocalDataStorage {
+  Future<Directory> getLocalDirectory() async {
+    final directory = await getApplicationDocumentsDirectory();
+    print(directory);
+    return directory;
+  }
+
+  Future<void> saveDataToFile(Map<String, dynamic> data) async {
+    final directory = await getLocalDirectory();
+    final file = File('${directory.path}/favoriteCoins.json');
+
+    try {
+      if (!directory.existsSync()) {
+        directory.createSync(recursive: true);
+      }
+
+      final jsonData = json.encode(data);
+
+      await file.writeAsString(jsonData);
+
+      print('Data saved to ${file.path}');
+    } catch (e) {
+      print('Error saving data: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> readDataFromFile() async {
+    final directory = await getLocalDirectory();
+    final file = File('${directory.path}/favoriteCoins.json');
+
+    try {
+      if (!file.existsSync()) {
+        return {};
+      }
+
+      final jsonData = await file.readAsString();
+      final data = json.decode(jsonData);
+      return data;
+    } catch (e) {
+      print('Error reading data: $e');
+      return {};
+    }
   }
 }

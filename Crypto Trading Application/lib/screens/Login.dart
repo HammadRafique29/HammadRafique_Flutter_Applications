@@ -3,6 +3,7 @@ import 'Signup.dart';
 import 'package:trading_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'adminLogin.dart';
 
 void main() {
@@ -49,6 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
           print("Email: ${value['Email']}");
           print("Password: ${value['Password']}");
           print("\nLogin Success");
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('loginExists', true);
+          Navigator.pop(context);
           break;
         } else {
           print("\nLogin Failed");

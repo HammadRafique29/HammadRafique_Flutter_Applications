@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trading_app/screens/coinPage.dart';
 import 'sampleData.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 int _currentIndex = 0;
@@ -35,8 +36,19 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     coinPage()
   ];
 
+  Future<void> SetData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? userLogedin = prefs.getBool('loginExists');
+    if (userLogedin != null) {
+      // final bool? userLoggedType = prefs.getBool('loginType');
+    } else {
+      await prefs.setBool('loginExists', false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    SetData();
     return Scaffold(
       appBar: buildMyAppBar(context),
       body: Container(
@@ -319,11 +331,103 @@ class _PageOneState extends State<PageOne> {
   }
 }
 
-class PageTwo extends StatelessWidget {
+// class PageTwo extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Center(
+//       child: Text('Page One Content'),
+//     );
+//   }
+// }
+
+class PageTwo extends StatefulWidget {
+  const PageTwo({super.key});
+
+  @override
+  State<PageTwo> createState() => _PageTwoState();
+}
+
+class _PageTwoState extends State<PageTwo> {
+  List<dynamic> favoritecoins = [];
+
+  void getJsonData() async {
+    var data = await LocalDataStorage().readDataFromFile();
+    print("# ${data}");
+    if (!data.isEmpty) {
+      if (data["Coins"] != null) {
+        setState(() {
+          favoritecoins = data["Coins"];
+        });
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getJsonData();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Page One Content'),
+    List<Widget> CryptoContainer = [];
+
+    for (int i = 0; i < crypto.length; i++) {
+      print("### ${favoritecoins}");
+      if (favoritecoins.contains(crypto[i]["id"])) {
+        CryptoContainer.add(GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CoinScreen(
+                    coinName: crypto[i],
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              width: MediaQuery.sizeOf(context).width,
+              height: MediaQuery.sizeOf(context).height * 0.07,
+              color: Colors.white,
+              child: ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    child: Image.network(crypto[i]["image"]),
+                  ),
+                  title: Text(
+                    "${crypto[i]["id"][0].toUpperCase()}${crypto[i]["id"].substring(1).toLowerCase()}",
+                    style: const TextStyle(
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  trailing: Text(
+                    "${crypto[i]["current_price"]} USD",
+                    style: TextStyle(
+                      color: crypto[i]
+                                  ["price_change_percentage_24h_in_currency"] >
+                              0
+                          ? Colors.green
+                          : Colors.red[300],
+                      fontSize: 15.0,
+                    ),
+                  )),
+            )));
+        CryptoContainer.add(
+          SizedBox(height: 5),
+        );
+      }
+    }
+
+    return SingleChildScrollView(
+      child: Container(
+        margin: EdgeInsets.only(top: 20.0),
+        child: Column(
+          children: CryptoContainer,
+        ),
+      ),
     );
   }
 }
@@ -350,7 +454,17 @@ class PageFive extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('Page Five Content'),
+      child: ElevatedButton(
+        onPressed: () async {
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          final bool? userLogedin = prefs.getBool('loginExists');
+          if (userLogedin != null) {
+            print("### ${userLogedin}");
+            await prefs.setBool('loginExists', false);
+          } else {}
+        },
+        child: const Text("Logout"),
+      ),
     );
   }
 }
