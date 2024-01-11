@@ -52,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
           print("\nLogin Success");
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setBool('loginExists', true);
+          await prefs.setString('loginType', 'normal');
           Navigator.pop(context);
           break;
         } else {

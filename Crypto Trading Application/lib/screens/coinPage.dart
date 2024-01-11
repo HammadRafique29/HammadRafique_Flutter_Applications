@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'Login.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'localDataStorage.dart';
 
 class CoinScreen extends StatefulWidget {
   final Map<dynamic, dynamic> coinName;
@@ -106,6 +107,7 @@ class _CoinScreenState extends State<CoinScreen> {
                   data["Coins"]
                       .removeWhere((word) => word == widget.coinName["id"]);
                   LocalDataStorage().saveDataToFile({"Coins": data["Coins"]});
+                  setState(() {});
                 } else {
                   favouriteCoin = true;
                   var data = await LocalDataStorage().readDataFromFile();
@@ -119,6 +121,7 @@ class _CoinScreenState extends State<CoinScreen> {
                     LocalDataStorage().saveDataToFile(data);
                     data = await LocalDataStorage().readDataFromFile();
                     print("## Got Filled ${data}");
+                    setState(() {});
                   }
                 }
 
@@ -398,50 +401,5 @@ class _CoinScreenState extends State<CoinScreen> {
         color: Colors.amber,
       ),
     );
-  }
-}
-
-class LocalDataStorage {
-  Future<Directory> getLocalDirectory() async {
-    final directory = await getApplicationDocumentsDirectory();
-    print(directory);
-    return directory;
-  }
-
-  Future<void> saveDataToFile(Map<String, dynamic> data) async {
-    final directory = await getLocalDirectory();
-    final file = File('${directory.path}/favoriteCoins.json');
-
-    try {
-      if (!directory.existsSync()) {
-        directory.createSync(recursive: true);
-      }
-
-      final jsonData = json.encode(data);
-
-      await file.writeAsString(jsonData);
-
-      print('Data saved to ${file.path}');
-    } catch (e) {
-      print('Error saving data: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>> readDataFromFile() async {
-    final directory = await getLocalDirectory();
-    final file = File('${directory.path}/favoriteCoins.json');
-
-    try {
-      if (!file.existsSync()) {
-        return {};
-      }
-
-      final jsonData = await file.readAsString();
-      final data = json.decode(jsonData);
-      return data;
-    } catch (e) {
-      print('Error reading data: $e');
-      return {};
-    }
   }
 }

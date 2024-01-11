@@ -3,7 +3,11 @@ import 'package:trading_app/screens/coinPage.dart';
 import 'sampleData.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
+import 'localDataStorage.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 int _currentIndex = 0;
 
@@ -377,8 +381,8 @@ class _PageTwoState extends State<PageTwo> {
       print("### ${favoritecoins}");
       if (favoritecoins.contains(crypto[i]["id"])) {
         CryptoContainer.add(GestureDetector(
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => CoinScreen(
@@ -386,6 +390,8 @@ class _PageTwoState extends State<PageTwo> {
                   ),
                 ),
               );
+              getJsonData();
+              setState(() {});
             },
             child: Container(
               width: MediaQuery.sizeOf(context).width,
@@ -420,15 +426,18 @@ class _PageTwoState extends State<PageTwo> {
         );
       }
     }
+    //
 
-    return SingleChildScrollView(
-      child: Container(
-        margin: EdgeInsets.only(top: 20.0),
-        child: Column(
-          children: CryptoContainer,
-        ),
-      ),
-    );
+    return CryptoContainer.length > 0
+        ? SingleChildScrollView(
+            child: Container(
+              margin: EdgeInsets.only(top: 20.0),
+              child: Column(
+                children: CryptoContainer,
+              ),
+            ),
+          )
+        : Center(child: Text("Please Add Coins To Favorite First"));
   }
 }
 
@@ -441,11 +450,32 @@ class PageThree extends StatelessWidget {
   }
 }
 
-class PageFour extends StatelessWidget {
+class PageFour extends StatefulWidget {
+  const PageFour({super.key});
+
+  @override
+  State<PageFour> createState() => _PageFourState();
+}
+
+class _PageFourState extends State<PageFour> {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Page Four Content'),
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: EdgeInsets.only(right: 16.0, bottom: 16.0),
+        child: FloatingActionButton(
+          backgroundColor: Colors.amber[400]!.withOpacity(0.8),
+          onPressed: () {
+            // Add your onPressed logic here
+            showDialog(
+              context: context,
+              builder: (context) => PostDialog(),
+            );
+          },
+          child: Icon(Icons.add, color: Colors.white),
+        ),
+      ),
     );
   }
 }
@@ -474,6 +504,134 @@ class coinPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text('Coin Page Content'),
+    );
+  }
+}
+
+// Define a custom dialog class that extends StatelessWidget
+class PostDialog extends StatelessWidget {
+  // Declare the text editing controllers for the title and the paragraph
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController paragraphController = TextEditingController();
+
+// Define a function to pick an image from the gallery and return it as a File
+  Future<File?> _pickImage() async {
+    // Use the image_picker package to get the image
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    // Return the image as a File if it is not null, otherwise return null
+    return pickedFile != null ? File(pickedFile.path) : null;
+  }
+
+  Future<File?> _pickVideo() async {
+    // Use the image_picker package to get the video
+    final pickedFile =
+        await ImagePicker().pickVideo(source: ImageSource.gallery);
+
+    // Return the video as a File if it is not null, otherwise return null
+    return pickedFile != null ? File(pickedFile.path) : null;
+  }
+
+  Future<void> _uploadVideo(File? video, String name) async {
+    // Check if the video is not null
+    if (video != null) {
+      // Create a reference to the firebase storage
+      FirebaseStorage storage = FirebaseStorage.instance;
+
+      // Create a reference to the specific location with the given name
+      Reference ref = storage.ref().child(name);
+
+      // Upload the file to firebase storage
+      UploadTask task = ref.putFile(video);
+
+      // Wait for the task to complete and get the download url
+      String url = await (await task).ref.getDownloadURL();
+
+      // Print the url for debugging
+      print(url);
+    }
+  }
+
+  // Override the build method to return a Dialog widget
+  @override
+  Widget build(BuildContext context) {
+    // Return a Dialog widget with a custom shape and content
+    return Dialog(
+      // backgroundColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Container(
+          height: MediaQuery.sizeOf(context).height * 0.6,
+          width: MediaQuery.sizeOf(context).width,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+          ),
+          padding: EdgeInsets.only(top: 5.0, left: 10, right: 10, bottom: 5.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(height: 10),
+                Container(
+                  color: Colors.white,
+                  height: MediaQuery.sizeOf(context).height * 0.05,
+                  child: TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                // A TextField widget for the paragraph input
+                SingleChildScrollView(
+                  child: Container(
+                    color: Colors.white,
+                    height: MediaQuery.sizeOf(context).height > 800
+                        ? MediaQuery.sizeOf(context).height * 0.45
+                        : MediaQuery.sizeOf(context).height * 0.35,
+                    child: TextField(
+                      controller: paragraphController,
+                      maxLines: 100,
+                      decoration: InputDecoration(
+                        labelText: 'Paragraph',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ),
+                // A Row widget for the icon buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.camera_alt, color: Colors.amber),
+                      onPressed: () {
+                        _pickImage();
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.video_collection_rounded,
+                          color: Colors.amber),
+                      onPressed: () {},
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.link, color: Colors.amber),
+                      onPressed: () {},
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.send, color: Colors.amber),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )),
     );
   }
 }

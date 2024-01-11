@@ -41,6 +41,8 @@ dependencies:
   shared_preferences: ^2.2.2
   permission_handler: any
   path_provider: any
+  image_picker: any
+  firebase_storage: any
 
 dev_dependencies:
   flutter_test:
