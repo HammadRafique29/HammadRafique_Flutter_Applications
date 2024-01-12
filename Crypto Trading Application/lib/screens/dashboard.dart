@@ -449,11 +449,131 @@ class _PageTwoState extends State<PageTwo> {
   }
 }
 
-class PageThree extends StatelessWidget {
+class PageThree extends StatefulWidget {
+  const PageThree({super.key});
+
+  @override
+  State<PageThree> createState() => _PageThreeState();
+}
+
+class _PageThreeState extends State<PageThree> {
+  TextEditingController _controller = TextEditingController();
+  String? _selectedValue;
+  String _message = '';
+  List<String> values = [];
+  Map<dynamic, dynamic> coinsIcons = {};
+  var SelectedCoin = null;
+
+  void getCoingsValues() {
+    for (int i = 0; i < crypto.length; i++) {
+      values.add(crypto[i]["id"]);
+    }
+    print(values);
+  }
+
+  void getCoingsIcons() {
+    for (int i = 0; i < crypto.length; i++) {
+      coinsIcons.addAll({
+        crypto[i]["id"]: [crypto[i]["image"], crypto[i]["current_price"]]
+      });
+    }
+    print(coinsIcons);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCoingsValues();
+    getCoingsIcons();
+  }
+
+  // Override the build method to return the widget tree
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('Page Three Content'),
+      child: Container(
+        width: MediaQuery.sizeOf(context).width * 0.8,
+        height: MediaQuery.sizeOf(context).height * 0.4,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(width: 1, color: Colors.grey),
+        ),
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 20),
+            DropdownButton<String>(
+              value: _selectedValue, // The current selected value
+              items: values // The list of values from the widget class
+                  .map((value) => DropdownMenuItem<String>(
+                        value: value, // The value of the item
+                        child: Row(
+                          children: [
+                            Image.network(coinsIcons[value][0],
+                                width: 20, height: 20),
+                            SizedBox(width: 10),
+                            Text(value)
+                          ],
+                        ), // The text to display
+                      ))
+                  .toList(), // Convert the map to a list
+              hint: const Text(
+                  'Select a value'), // The hint to show when no value is selected
+              onChanged: (value) {
+                // The callback to handle the value change
+                setState(() {
+                  // Update the selected value
+                  _selectedValue = value;
+                  SelectedCoin = _selectedValue;
+                });
+              },
+            ),
+            SelectedCoin != null
+                ? Container(
+                    margin: EdgeInsets.all(10),
+                    child: Image.network(
+                      coinsIcons[_selectedValue][0],
+                    ),
+                    width: 100,
+                    height: 100)
+                : SizedBox(),
+            Container(
+              width: MediaQuery.sizeOf(context).width * 0.6,
+              height: 50,
+              child: TextField(
+                controller: _controller, // The controller for the text field
+                keyboardType:
+                    TextInputType.number, // The keyboard type for numbers
+                decoration: const InputDecoration(
+                  labelText: 'Number of Coins', // The label for the text field
+                  border: OutlineInputBorder(), // The border for the text field
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            Container(
+              height: 30,
+              width: MediaQuery.sizeOf(context).width * 0.6,
+              child: Expanded(
+                  child: ElevatedButton(
+                child: Text('Calculate'), // The text to display on the button
+                onPressed: () {
+                  setState(() {
+                    _message =
+                        'Total USD: ${int.parse(_controller.text) * coinsIcons[_selectedValue][1]}';
+                  });
+                },
+              )),
+            ),
+            SizedBox(height: 15),
+            Text(
+              _message,
+              style: TextStyle(color: Colors.black, fontSize: 20),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -831,148 +951,3 @@ class _PostDialogState extends State<PostDialog> {
     );
   }
 }
-
-// // Define a custom dialog class that extends StatelessWidget
-// class PostDialoga extends StatelessWidget {
-//   // Declare the text editing controllers for the title and the paragraph
-//   final TextEditingController titleController = TextEditingController();
-//   final TextEditingController paragraphController = TextEditingController();
-//   List<dynamic> files = [];
-
-// // Define a function to pick an image from the gallery and return it as a File
-//   Future<File?> _pickImage() async {
-//     // Use the image_picker package to get the image
-//     final pickedFile =
-//         await ImagePicker().pickImage(source: ImageSource.gallery);
-
-//     // Return the image as a File if it is not null, otherwise return null
-//     return pickedFile != null ? File(pickedFile.path) : null;
-//   }
-
-//   Future<File?> _pickVideo() async {
-//     // Use the image_picker package to get the video
-//     final pickedFile =
-//         await ImagePicker().pickVideo(source: ImageSource.gallery);
-
-//     // Return the video as a File if it is not null, otherwise return null
-//     return pickedFile != null ? File(pickedFile.path) : null;
-//   }
-
-//   Future<void> _uploadVideo(File? video, String name) async {
-//     // Check if the video is not null
-//     if (video != null) {
-//       // Create a reference to the firebase storage
-//       FirebaseStorage storage = FirebaseStorage.instance;
-
-//       // Create a reference to the specific location with the given name
-//       Reference ref = storage.ref().child(name);
-
-//       // Upload the file to firebase storage
-//       UploadTask task = ref.putFile(video);
-
-//       // Wait for the task to complete and get the download url
-//       String url = await (await task).ref.getDownloadURL();
-
-//       // Print the url for debugging
-//       print(url);
-//     }
-//   }
-
-//   // Override the build method to return a Dialog widget
-//   @override
-//   Widget build(BuildContext context) {
-//     List<Widget> attachments = [];
-
-//     for (int i = 0; i < files.length; i++) {
-//       attachments.add(Icon(
-//         Icons.file_present,
-//         size: 40,
-//       ));
-//     }
-
-//     // Return a Dialog widget with a custom shape and content
-//     return Dialog(
-//       // backgroundColor: Colors.transparent,
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(12.0),
-//       ),
-//       child: Container(
-//           height: MediaQuery.sizeOf(context).height * 0.6,
-//           width: MediaQuery.sizeOf(context).width,
-//           decoration: BoxDecoration(
-//             borderRadius: BorderRadius.circular(10),
-//             color: Colors.white,
-//           ),
-//           padding: EdgeInsets.only(top: 5.0, left: 10, right: 10, bottom: 5.0),
-//           child: SingleChildScrollView(
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               children: <Widget>[
-//                 SizedBox(height: 10),
-//                 Container(
-//                   color: Colors.white,
-//                   height: MediaQuery.sizeOf(context).height * 0.05,
-//                   child: TextField(
-//                     controller: titleController,
-//                     decoration: InputDecoration(
-//                       labelText: 'Title',
-//                       border: OutlineInputBorder(),
-//                     ),
-//                   ),
-//                 ),
-//                 SizedBox(height: 10),
-//                 // A TextField widget for the paragraph input
-//                 SingleChildScrollView(
-//                   child: Container(
-//                     color: Colors.white,
-//                     height: MediaQuery.sizeOf(context).height > 800
-//                         ? MediaQuery.sizeOf(context).height * 0.45
-//                         : MediaQuery.sizeOf(context).height * 0.35,
-//                     child: TextField(
-//                       controller: paragraphController,
-//                       maxLines: 100,
-//                       decoration: InputDecoration(
-//                         labelText: 'Paragraph',
-//                         border: OutlineInputBorder(),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 files.length > 0
-//                     ? SingleChildScrollView(
-//                         scrollDirection: Axis.horizontal,
-//                         child: Row(
-//                           children: attachments,
-//                         ),
-//                       )
-//                     : SizedBox(),
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//                   children: <Widget>[
-//                     IconButton(
-//                       icon: Icon(Icons.camera_alt, color: Colors.amber),
-//                       onPressed: () {
-//                         var image = _pickImage();
-//                       },
-//                     ),
-//                     IconButton(
-//                       icon: Icon(Icons.video_collection_rounded,
-//                           color: Colors.amber),
-//                       onPressed: () {},
-//                     ),
-//                     IconButton(
-//                       icon: Icon(Icons.link, color: Colors.amber),
-//                       onPressed: () {},
-//                     ),
-//                     IconButton(
-//                       icon: Icon(Icons.send, color: Colors.amber),
-//                       onPressed: () {},
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           )),
-//     );
-//   }
-// }
