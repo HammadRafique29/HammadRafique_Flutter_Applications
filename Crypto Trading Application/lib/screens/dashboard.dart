@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trading_app/screens/Login.dart';
 import 'package:trading_app/screens/coinPage.dart';
 import 'sampleData.dart';
 import 'package:http/http.dart' as http;
@@ -790,16 +791,28 @@ class PageFive extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ElevatedButton(
-        onPressed: () async {
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final bool? userLogedin = prefs.getBool('loginExists');
-          if (userLogedin != null) {
-            print("### ${userLogedin}");
-            await prefs.setBool('loginExists', false);
-          } else {}
-        },
-        child: const Text("Logout"),
+      child: Column(
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              final result = await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()));
+            },
+            child: const Text("Logout"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
+              final bool? userLogedin = prefs.getBool('loginExists');
+              if (userLogedin != null) {
+                print("### ${userLogedin}");
+                await prefs.setBool('loginExists', false);
+              } else {}
+            },
+            child: const Text("Logout"),
+          )
+        ],
       ),
     );
   }

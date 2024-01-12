@@ -47,10 +47,8 @@ class _adminLoginScreenState extends State<adminLoginScreen> {
           print("Password: ${value['Password']}");
           print("\nLogin Success");
           final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool? userLogedin = prefs.getBool('loginExists');
-    if (userLogedin != null) {
-      await prefs.setString('loginType', 'admin');
-    }
+          await prefs.setBool('loginExists', true);
+          await prefs.setString('loginType', 'admin');
           break;
         } else {
           print("\nLogin Failed");
