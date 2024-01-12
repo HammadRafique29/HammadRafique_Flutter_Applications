@@ -1,4 +1,5 @@
 # trading_app
 
-<img width="794" alt="Application" src="https://github.com/HammadRafique29/HammadRafique_Flutter_Applications/assets/112252001/b5022d3c-94f2-465f-bbe2-060a646a6b67">
+<img width="770" alt="Application" src="https://github.com/HammadRafique29/HammadRafique_Flutter_Applications/assets/112252001/5de1341c-0fe7-4f69-a0fe-fd72a3c5fbf9">
+
 
