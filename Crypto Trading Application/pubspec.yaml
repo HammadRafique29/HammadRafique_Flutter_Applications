@@ -43,6 +43,9 @@ dependencies:
   path_provider: any
   image_picker: any
   firebase_storage: any
+  cloud_firestore: any
+  youtube_player_flutter: any
+  file_picker: any
 
 dev_dependencies:
   flutter_test:
