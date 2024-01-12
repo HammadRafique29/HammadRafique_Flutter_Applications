@@ -590,6 +590,7 @@ class _PageFourState extends State<PageFour> {
   List<Widget> Images = [];
   List<Widget> Videos = [];
   double postSize = 150;
+  bool adminLogin = false;
 
   YoutubePlayerController _controller = YoutubePlayerController(
     initialVideoId: "dQw4w9WgXcQ",
@@ -731,11 +732,25 @@ class _PageFourState extends State<PageFour> {
     }
   }
 
+  void getLoginType() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? userLogedin = prefs.getBool('loginExists');
+    if (userLogedin != null && userLogedin) {
+      final String? userLogedin = prefs.getString('loginType');
+      if (userLogedin == "admin") {
+        setState(() {
+          adminLogin = true;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getPosts();
+    getLoginType();
   }
 
   @override
@@ -748,23 +763,25 @@ class _PageFourState extends State<PageFour> {
           children: Posts,
         ),
       ),
-      floatingActionButton: Align(
-        alignment: Alignment.bottomRight,
-        child: Padding(
-          padding: EdgeInsets.only(right: 16.0, bottom: 16.0),
-          child: FloatingActionButton(
-            backgroundColor: Colors.amber[400]!.withOpacity(0.8),
-            onPressed: () {
-              // Add your onPressed logic here
-              showDialog(
-                context: context,
-                builder: (context) => PostDialog(),
-              );
-            },
-            child: Icon(Icons.add, color: Colors.white),
-          ),
-        ),
-      ),
+      floatingActionButton: adminLogin
+          ? Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: 16.0, bottom: 16.0),
+                child: FloatingActionButton(
+                  backgroundColor: Colors.amber[400]!.withOpacity(0.8),
+                  onPressed: () {
+                    // Add your onPressed logic here
+                    showDialog(
+                      context: context,
+                      builder: (context) => PostDialog(),
+                    );
+                  },
+                  child: Icon(Icons.add, color: Colors.white),
+                ),
+              ),
+            )
+          : Container(),
     );
   }
 }
