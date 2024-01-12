@@ -15,6 +15,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:path/path.dart' as p;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 int _currentIndex = 0;
 
@@ -468,6 +469,8 @@ class _PageFourState extends State<PageFour> {
   List<Widget> Posts = [];
   List<Widget> Images = [];
   List<Widget> Videos = [];
+  double postSize = 150;
+
   YoutubePlayerController _controller = YoutubePlayerController(
     initialVideoId: "dQw4w9WgXcQ",
     flags: YoutubePlayerFlags(
@@ -475,6 +478,21 @@ class _PageFourState extends State<PageFour> {
       mute: false,
     ),
   );
+
+  Future<void> launchURL(String url) async {
+    // Check if the URL can be launched
+    if (await canLaunch(url)) {
+      // Launch the URL in the default browser
+      await launch(
+        url,
+        forceSafariVC: false, // For iOS
+        forceWebView: false, // For Android
+      );
+    } else {
+      // Throw an error if the URL is invalid or cannot be launched
+      throw 'Could not launch $url';
+    }
+  }
 
   void getPosts() async {
     await Firebase.initializeApp(
@@ -489,15 +507,16 @@ class _PageFourState extends State<PageFour> {
       for (var dataPost in data.entries) {
         var dataPostItems = dataPost.value[0];
 
-        // print("### ${dataPostItems}");
-
         for (int i = 0; i < dataPostItems["images"].length; i++) {
           print(dataPostItems["images"][i]);
           Images.add(Center(
-              child: Image.network(
-            dataPostItems["images"][i],
-            width: MediaQuery.sizeOf(context).width * 0.7,
-            height: 150,
+              child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.0),
+            child: Image.network(
+              dataPostItems["images"][i],
+              width: MediaQuery.sizeOf(context).width * 0.7,
+              height: 150,
+            ),
           )));
           Images.add(SizedBox(height: 5));
         }
@@ -509,53 +528,80 @@ class _PageFourState extends State<PageFour> {
           _controller = YoutubePlayerController(
             initialVideoId: videoId,
             flags: YoutubePlayerFlags(
-              autoPlay: true,
+              autoPlay: false,
               mute: false,
             ),
           );
         }
 
         print("## ${dataPostItems}");
+        //
         setState(
           () {
             Posts.add(
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                width: MediaQuery.sizeOf(context).width * 0.8,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(width: 2, color: Colors.amber),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Center(
-                      child: Text("${dataPostItems["title"]}"),
-                    ),
-                    SizedBox(height: 5),
-                    Padding(
-                      padding: EdgeInsets.only(left: 40, right: 40),
-                      child: Text("${dataPostItems["para"]}"),
-                    ),
-                    SizedBox(height: 5),
-                    Column(
-                      children: Images,
-                    ),
-                    SizedBox(height: 10),
-                    Center(
-                      child: Container(
-                        width: MediaQuery.sizeOf(context).width * 0.7,
-                        child: YoutubePlayer(
-                          controller: _controller,
-                          showVideoProgressIndicator: true,
-                          progressIndicatorColor: Colors.blueAccent,
+              GestureDetector(
+                onTap: () {
+                  launchURL('https://www.google.com');
+                },
+                child: Container(
+                  margin: EdgeInsets.only(
+                      top: 10, left: MediaQuery.sizeOf(context).width * 0.08),
+                  width: MediaQuery.sizeOf(context).width * 0.8,
+                  // height: postSize < 150 ? 230 : postSize + 70.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(width: 2, color: Colors.amber),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        // height: postSize!,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 10),
+                              Center(
+                                child: Text(
+                                  "${dataPostItems["title"]}",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber),
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Padding(
+                                padding: EdgeInsets.only(left: 30, right: 30),
+                                child: Text("${dataPostItems["para"]}",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.normal,
+                                    )),
+                              ),
+                              SizedBox(height: 5),
+                              Column(
+                                children: Images,
+                              ),
+                              SizedBox(height: 10),
+                              Center(
+                                child: Container(
+                                  width: MediaQuery.sizeOf(context).width * 0.7,
+                                  child: YoutubePlayer(
+                                    controller: _controller,
+                                    showVideoProgressIndicator: true,
+                                    progressIndicatorColor: Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
